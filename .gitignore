@@ -1,0 +1,6 @@
+venv/
+driver/
+dist/
+build/
+
+main.spec
