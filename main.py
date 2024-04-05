@@ -237,8 +237,13 @@ class MyApp(QMainWindow, Ui_Auto):
         match_propose.send_keys('친목도모')
         
         time.sleep(1.0)
-        #self.driver.find_elements(By.CLASS_NAME,'page-btn')[0].click()
-        
+        self.driver.find_elements(By.CLASS_NAME,'page-btn')[0].click()
+        time.sleep(1)
+        alert = self.driver.switch_to.alert
+        alert.accept()
+        time.sleep(1)
+        self.driver.back() 
+        #self.driver.back() 
         #신청자명 유형민
         #연락처 010-5363-3809
         #환불계좌 3520395979943 농협 
