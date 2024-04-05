@@ -39,7 +39,7 @@ class MyApp(QMainWindow, Ui_Auto):
             "수요일",
             "목요일",
             "금요일",
-            "금요일",
+            "토요일",
             "일요일",
         ]
         self.check_box_list = [
