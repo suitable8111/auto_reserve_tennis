@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>500</x>
-     <y>120</y>
+     <y>140</y>
      <width>100</width>
      <height>32</height>
     </rect>
@@ -157,7 +157,7 @@
    <property name="geometry">
     <rect>
      <x>420</x>
-     <y>80</y>
+     <y>100</y>
      <width>181</width>
      <height>31</height>
     </rect>
@@ -167,7 +167,7 @@
    <property name="geometry">
     <rect>
      <x>430</x>
-     <y>50</y>
+     <y>80</y>
      <width>58</width>
      <height>16</height>
     </rect>
@@ -202,10 +202,10 @@
   <widget class="QCheckBox" name="jungu1_chk_box">
    <property name="geometry">
     <rect>
-     <x>40</x>
+     <x>340</x>
      <y>50</y>
      <width>51</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="text">
@@ -228,7 +228,7 @@
   <widget class="QCheckBox" name="jungu2_chk_box">
    <property name="geometry">
     <rect>
-     <x>100</x>
+     <x>400</x>
      <y>50</y>
      <width>51</width>
      <height>20</height>
@@ -241,7 +241,7 @@
   <widget class="QCheckBox" name="jungu3_chk_box">
    <property name="geometry">
     <rect>
-     <x>160</x>
+     <x>460</x>
      <y>50</y>
      <width>51</width>
      <height>20</height>
@@ -254,7 +254,7 @@
   <widget class="QCheckBox" name="jungu4_chk_box">
    <property name="geometry">
     <rect>
-     <x>220</x>
+     <x>520</x>
      <y>50</y>
      <width>51</width>
      <height>20</height>
@@ -262,6 +262,71 @@
    </property>
    <property name="text">
     <string>정구4</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="sinea1_chk_box">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>50</y>
+     <width>51</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>실내1</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="sinea2_chk_box">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>50</y>
+     <width>51</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>실내2</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="yaw3_chk_box">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>50</y>
+     <width>51</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>야외3</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="yaw4_chk_box">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>50</y>
+     <width>51</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>야외4</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="yaw7_chk_box">
+   <property name="geometry">
+    <rect>
+     <x>280</x>
+     <y>50</y>
+     <width>51</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>야외7</string>
    </property>
   </widget>
  </widget>

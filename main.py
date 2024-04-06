@@ -51,7 +51,24 @@ class MyApp(QMainWindow, Ui_Auto):
             self.fri_chk_box,
             self.sat_chk_box
         ]
+        self.url_list = [
+            "https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%8B%A4%EB%82%B41"
+            ,"https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%8B%A4%EB%82%B42"
+            ,"https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%95%BC%EC%99%B83"
+            ,"https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%95%BC%EC%99%B84"
+            ,"https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%95%BC%EC%99%B87"
+            ,"https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC1"
+            ,"https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC2"
+            ,"https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC3"
+            ,"https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC4"
+        ]
+        
         self.jungu_box_list = [
+            self.sinea1_chk_box,
+            self.sinea2_chk_box,
+            self.yaw3_chk_box,
+            self.yaw4_chk_box,
+            self.yaw7_chk_box,
             self.jungu1_chk_box,
             self.jungu2_chk_box,
             self.jungu3_chk_box,
@@ -86,6 +103,12 @@ class MyApp(QMainWindow, Ui_Auto):
         
         
     def on_clicked_auto_reservce(self):
+        # 실내1: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%8B%A4%EB%82%B41/
+        # 실내2: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%8B%A4%EB%82%B42/
+        # 야외3: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%95%BC%EC%99%B83/
+        # 야외4: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%95%BC%EC%99%B84/
+        # 야외7: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%95%BC%EC%99%B87/
+        
         # 정구1 :https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC1/
         # 정구2 :https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC2/
         # 정구3 :https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC3/
@@ -95,7 +118,7 @@ class MyApp(QMainWindow, Ui_Auto):
         self.pass_list = []
         for i_jg, idx_jg in enumerate(self.jungu_box_list):
             if (self.jungu_box_list[i_jg].isChecked()): 
-                jungu1_url = "https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC"+str(i_jg+1)+"/" #로그인 관련
+                jungu1_url = self.url_list[i_jg] 
                 self.driver.get(jungu1_url)
                 time.sleep(1)
                 
