@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'mainWindowxXthxc.ui'
+## Form generated from reading UI file 'mainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.2
+## Created by: Qt User Interface Compiler version 6.6.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -99,6 +99,9 @@ class Ui_Auto(object):
         self.yaw7_chk_box = QCheckBox(Auto)
         self.yaw7_chk_box.setObjectName(u"yaw7_chk_box")
         self.yaw7_chk_box.setGeometry(QRect(280, 50, 51, 21))
+        self.next_month_chk_box = QCheckBox(Auto)
+        self.next_month_chk_box.setObjectName(u"next_month_chk_box")
+        self.next_month_chk_box.setGeometry(QRect(120, 10, 111, 31))
 
         self.retranslateUi(Auto)
 
@@ -129,5 +132,6 @@ class Ui_Auto(object):
         self.yaw3_chk_box.setText(QCoreApplication.translate("Auto", u"\uc57c\uc6783", None))
         self.yaw4_chk_box.setText(QCoreApplication.translate("Auto", u"\uc57c\uc6784", None))
         self.yaw7_chk_box.setText(QCoreApplication.translate("Auto", u"\uc57c\uc6787", None))
+        self.next_month_chk_box.setText(QCoreApplication.translate("Auto", u"\ub2e4\uc74c\ub2ec \uc608\uc57d\ud558\uae30", None))
     # retranslateUi
 

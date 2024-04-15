@@ -18,6 +18,11 @@ class MyApp(QMainWindow, Ui_Auto):
         super().__init__()
         self.setupUi(self)
         self.jungu_list = [
+            "실내1",
+            "실내2",
+            "야외3",
+            "야외4",
+            "야외7",
             "정구1",
             "정구2",
             "정구3",
@@ -129,7 +134,21 @@ class MyApp(QMainWindow, Ui_Auto):
                 current_date = self.driver.find_element(By.CLASS_NAME,'calendar').text
                 current_year = int(current_date.split(' ')[0].replace('년',''))
                 current_month = int(current_date.split(' ')[1].replace('월',''))
-                
+                #?indate=2024/5/1
+                if (self.next_month_chk_box.isChecked()): 
+                    next_year = 2024
+                    next_month = 1
+                    if(current_month+1 == 13):
+                        next_year = current_year + 1
+                        next_month = 1
+                    else:
+                        next_month = current_month + 1
+                    next_text = "?indate="+str(next_year)+"/"+str(next_month)+"/1"
+                    self.driver.get(jungu1_url+next_text)
+                    time.sleep(2)
+                    table_tr = self.driver.find_elements(By.TAG_NAME,'tr')
+                    table_tr.pop(0)
+                    table_tr.pop(5)
                 
                 day_enable_obj = {}
                 day_count = 1
@@ -138,7 +157,10 @@ class MyApp(QMainWindow, Ui_Auto):
                     item = tr_idx.text.split('\n')
                     for j,jdx in enumerate(item):
                         if(j % 2 == 1):
-                            what_day = self.what_day_is_it(date(current_year,current_month,day_count))
+                            if (self.next_month_chk_box.isChecked()): 
+                                what_day = self.what_day_is_it(date(next_year,next_month,day_count))
+                            else:
+                                what_day = self.what_day_is_it(date(current_year,current_month,day_count))
                             enable_flag = True if (jdx.find('예약가능') >= 0) else False
                             day_enable_obj[day_count] = [what_day,enable_flag]
                             day_count += 1  
@@ -155,7 +177,10 @@ class MyApp(QMainWindow, Ui_Auto):
                                 #print(str(i_obj+1)+'일 월요일 확인..')
                                 if day_enable_obj[obj_idx][1] == False:
                                     print('예약 불가 : 해당 요일 불가능 지났거나 꽉찼음')
-                                    fail_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 해당 요일 불가능 지났거나 꽉찼음'
+                                    if (self.next_month_chk_box.isChecked()): 
+                                        fail_msg = self.jungu_list[i_jg]+', '+str(next_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 해당 요일 불가능 지났거나 꽉찼음'
+                                    else:
+                                        fail_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 해당 요일 불가능 지났거나 꽉찼음'
                                     self.fail_list.append(fail_msg)
                                 else:
                                     #print('예약가능 해당 요일 예약하기')
@@ -205,14 +230,22 @@ class MyApp(QMainWindow, Ui_Auto):
                                             if(item.text[0:2] == target_time[0:2]):
                                                 print('예약 불가 : 해당시간()',target_time,') 대 예약자가 있음 ',item.text)
                                                 # 불가한 경우 Fail 처리
-                                                fail_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 해당시간 예약자가 있음'
+                                                if (self.next_month_chk_box.isChecked()): 
+                                                    fail_msg = self.jungu_list[i_jg]+', '+str(next_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 해당시간 예약자가 있음'
+                                                
+                                                else:
+                                                    fail_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 해당시간 예약자가 있음'
                                                 self.fail_list.append(fail_msg)
                                                 enable_time_reserved_flag = False
                                                 
                                     if (len(disable_time_list) >= 15):
                                         print('예약 불가 : 모든 시간 대 예약자가 있음 ',item.text)
                                         # 불가한 경우 Fail 처리
-                                        fail_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 모든 시간대 예약자가 있음'
+                                        if (self.next_month_chk_box.isChecked()): 
+                                            fail_msg = self.jungu_list[i_jg]+', '+str(next_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 모든 시간대 예약자가 있음'
+                                        
+                                        else:
+                                            fail_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 모든 시간대 예약자가 있음'
                                         self.fail_list.append(fail_msg)
                                         enable_time_reserved_flag = False
                                         
@@ -227,7 +260,10 @@ class MyApp(QMainWindow, Ui_Auto):
                                         time.sleep(1)
                                         self.input_personal_data()
                                         print('예약 성공')
-                                        pass_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 성공'
+                                        if (self.next_month_chk_box.isChecked()): 
+                                            pass_msg = self.jungu_list[i_jg]+', '+str(next_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 성공'
+                                        else:
+                                            pass_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 성공'
                                         self.pass_list.append(pass_msg)
                                         self.driver.back()
                                         time.sleep(1)

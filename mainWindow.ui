@@ -329,6 +329,19 @@
     <string>야외7</string>
    </property>
   </widget>
+  <widget class="QCheckBox" name="next_month_chk_box">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>10</y>
+     <width>111</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>다음달 예약하기</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>
