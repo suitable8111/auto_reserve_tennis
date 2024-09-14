@@ -1,6 +1,6 @@
 import sys
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
-from ui_mainWindow import Ui_Auto  # Import the generated UI file
+from ui_mainWindow import Ui_AutoTennis  # Import the generated UI file
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -13,7 +13,7 @@ from PySide6.QtCore import QDate, QStringListModel
 from datetime import datetime, date
 path = os.path.dirname(os.path.abspath(__file__))
 
-class MyApp(QMainWindow, Ui_Auto):
+class MyApp(QMainWindow, Ui_AutoTennis):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
@@ -80,11 +80,22 @@ class MyApp(QMainWindow, Ui_Auto):
             self.jungu4_chk_box
         ]
         chrome_options = webdriver.ChromeOptions()
-        self.driver = webdriver.Chrome(service= Service(ChromeDriverManager().install()), options=chrome_options)
+        #self.driver = webdriver.Chrome(service= Service(ChromeDriverManager().install()), options=chrome_options)
+        #self.driver = webdriver.Chrome(service= Service(ChromeDriverManager().install()))
+        driver_path = ChromeDriverManager().install()
+        correct_driver_path = os.path.join(os.path.dirname(driver_path), "chromedriver.exe")
+        self.driver = webdriver.Chrome(service=Service(executable_path=correct_driver_path), options=chrome_options)
         
-    
+        self.time_combo_box_list = [
+            self.time_combo_box,
+            self.time2_combo_box,
+            self.time3_combo_box        
+        ]
+        for item in self.time_combo_box_list:
+            item.addItems(time_title)    
+        
         self.actionButton.clicked.connect(self.on_clicked_auto_reservce)
-        self.time_combo_box.addItems(time_title)
+        
         #set number default 
         self.fail_model = QStringListModel()
         self.fail_list_view.setModel(self.fail_model)
@@ -108,173 +119,215 @@ class MyApp(QMainWindow, Ui_Auto):
         
         
     def on_clicked_auto_reservce(self):
-        # 실내1: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%8B%A4%EB%82%B41/
-        # 실내2: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%8B%A4%EB%82%B42/
-        # 야외3: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%95%BC%EC%99%B83/
-        # 야외4: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%95%BC%EC%99%B84/
-        # 야외7: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%95%BC%EC%99%B87/
+        target_time_list = []
+        target_time_pos_list = []
+                                        
+        for item in self.time_combo_box_list:
+            target_time_list.append(time_title[item.currentIndex()])
+            target_time_pos_list.append(item.currentIndex())
         
-        # 정구1 :https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC1/
-        # 정구2 :https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC2/
-        # 정구3 :https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC3/
-        # 정구4 :https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC4/
+        
+                        
+        if (target_time_pos_list[0] == 0 and target_time_pos_list[1] == 0 and target_time_pos_list[2] == 0):
+            print('시간대 선택 확인')
+        else:
+            # 실내1: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%8B%A4%EB%82%B41/
+            # 실내2: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%8B%A4%EB%82%B42/
+            # 야외3: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%95%BC%EC%99%B83/
+            # 야외4: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%95%BC%EC%99%B84/
+            # 야외7: https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%95%BC%EC%99%B87/
+            
+            # 정구1 :https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC1/
+            # 정구2 :https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC2/
+            # 정구3 :https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC3/
+            # 정구4 :https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EB%82%A8%EA%B0%80%EB%9E%8C%ED%85%8C%EB%8B%88%EC%8A%A4%EC%9E%A5/%EC%A0%95%EA%B5%AC4/
 
-        self.fail_list = []
-        self.pass_list = []
-        for i_jg, idx_jg in enumerate(self.jungu_box_list):
-            if (self.jungu_box_list[i_jg].isChecked()): 
-                jungu1_url = self.url_list[i_jg] 
-                self.driver.get(jungu1_url)
-                time.sleep(1)
-                
-                table_tr = self.driver.find_elements(By.TAG_NAME,'tr')
-                table_tr.pop(0)
-                table_tr.pop(5)
-                
-                current_date = self.driver.find_element(By.CLASS_NAME,'calendar').text
-                current_year = int(current_date.split(' ')[0].replace('년',''))
-                current_month = int(current_date.split(' ')[1].replace('월',''))
-                #?indate=2024/5/1
-                if (self.next_month_chk_box.isChecked()): 
-                    next_year = 2024
-                    next_month = 1
-                    if(current_month+1 == 13):
-                        next_year = current_year + 1
-                        next_month = 1
-                    else:
-                        next_month = current_month + 1
-                    next_text = "?indate="+str(next_year)+"/"+str(next_month)+"/1"
-                    self.driver.get(jungu1_url+next_text)
-                    time.sleep(2)
+            self.fail_list = []
+            self.pass_list = []
+            
+            for i_jg, idx_jg in enumerate(self.jungu_box_list):
+                if (self.jungu_box_list[i_jg].isChecked()): 
+                    jungu1_url = self.url_list[i_jg] 
+                    self.driver.get(jungu1_url)
+                    time.sleep(1)
+                    
                     table_tr = self.driver.find_elements(By.TAG_NAME,'tr')
                     table_tr.pop(0)
                     table_tr.pop(5)
-                
-                day_enable_obj = {}
-                day_count = 1
-                
-                for tr_idx in table_tr :
-                    item = tr_idx.text.split('\n')
-                    for j,jdx in enumerate(item):
-                        if(j % 2 == 1):
-                            if (self.next_month_chk_box.isChecked()): 
-                                what_day = self.what_day_is_it(date(next_year,next_month,day_count))
-                            else:
-                                what_day = self.what_day_is_it(date(current_year,current_month,day_count))
-                            enable_flag = True if (jdx.find('예약가능') >= 0) else False
-                            day_enable_obj[day_count] = [what_day,enable_flag]
-                            day_count += 1  
-                            
-                for i_day, day_idx in enumerate(self.day_kor_list):
-                    if (self.check_box_list[i_day].isChecked()):
-                        time.sleep(1)
-                        target_time = time_title[self.time_combo_box.currentIndex()]
-                        target_time_pos = self.time_combo_box.currentIndex()
-                        week_count = 0
-                        for i_obj, obj_idx in enumerate(day_enable_obj):
-                            if day_enable_obj[obj_idx][0] == self.day_kor_list[i_day]:
-                                print(str(obj_idx+1),'(',day_idx,')일 ',time_title[self.time_combo_box.currentIndex()],' 시간대 예약하기')
-                                #print(str(i_obj+1)+'일 월요일 확인..')
-                                if day_enable_obj[obj_idx][1] == False:
-                                    print('예약 불가 : 해당 요일 불가능 지났거나 꽉찼음')
-                                    if (self.next_month_chk_box.isChecked()): 
-                                        fail_msg = self.jungu_list[i_jg]+', '+str(next_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 해당 요일 불가능 지났거나 꽉찼음'
-                                    else:
-                                        fail_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 해당 요일 불가능 지났거나 꽉찼음'
-                                    self.fail_list.append(fail_msg)
+                    
+                    current_date = self.driver.find_element(By.CLASS_NAME,'calendar').text
+                    current_year = int(current_date.split(' ')[0].replace('년',''))
+                    current_month = int(current_date.split(' ')[1].replace('월',''))
+                    #?indate=2024/5/1
+                    if (self.next_month_chk_box.isChecked()): 
+                        next_year = 2024
+                        next_month = 1
+                        if(current_month+1 == 13):
+                            next_year = current_year + 1
+                            next_month = 1
+                        else:
+                            next_month = current_month + 1
+                        next_text = "?indate="+str(next_year)+"/"+str(next_month)+"/1"
+                        self.driver.get(jungu1_url+next_text)
+                        time.sleep(2)
+                        table_tr = self.driver.find_elements(By.TAG_NAME,'tr')
+                        table_tr.pop(0)
+                        table_tr.pop(5)
+                    
+                    day_enable_obj = {}
+                    day_count = 1
+                    
+                    for tr_idx in table_tr:
+                        item = tr_idx.text.split('\n')
+                        for j,jdx in enumerate(item):
+                            if(j % 2 == 1):
+                                if (self.next_month_chk_box.isChecked()): 
+                                    what_day = self.what_day_is_it(date(next_year,next_month,day_count))
                                 else:
-                                    #print('예약가능 해당 요일 예약하기')
-                                    #send 예약
-                                    #click 예약하기, 1 is monday
+                                    what_day = self.what_day_is_it(date(current_year,current_month,day_count))
+                                enable_flag = True if (jdx.find('예약가능') >= 0) else False
+                                day_enable_obj[day_count] = [what_day,enable_flag]
+                                day_count += 1  
+                                
+                    for i_day, day_idx in enumerate(self.day_kor_list):
+                        if (self.check_box_list[i_day].isChecked()):
+                            time.sleep(1)
+                                
+                            #target_time = time_title[self.time_combo_box.currentIndex()]
+                            #target_time_pos = self.time_combo_box.currentIndex()
+                            
+                            week_count = 0
+                            for i_obj, obj_idx in enumerate(day_enable_obj):
+                                if day_enable_obj[obj_idx][0] == self.day_kor_list[i_day]:
                                     
-                                    #weekcount = 0
-                                    #7 일 월 화 수 목 금 토
-                                    #6 월 화 수 목 금 토
-                                    #5 화 수 목 금 토
-                                    #4 수 목 금 토
-                                    #3 목 금 토
-                                    #2 금 토
-                                    #1 토
-                                    
-                                    #weekcount = 5 or 6
-                                    #7 일 월 화 수 목 금 토
-                                    #6 일 월 화 수 목 금 
-                                    #5 일 월 화 수 목 
-                                    #4 일 월 화 수 
-                                    #3 일 월 화 
-                                    #2 일 월 
-                                    #1 일 
-                                    
-                                    size_tr_a = len(table_tr[week_count].find_elements(By.TAG_NAME,'a'))
-                                    if(week_count == 0):
-                                        diff = 7-size_tr_a
-                                        if(diff >= 0):
-                                            table_tr[week_count].find_elements(By.TAG_NAME,'a')[i_day-diff].click()
-                                        else:
-                                            continue
-                                    elif(week_count == len(table_tr)-1):
-                                        if(size_tr_a > i_day):
-                                            table_tr[week_count].find_elements(By.TAG_NAME,'a')[i_day].click()
-                                        else:
-                                            continue
-                                    else:
-                                        table_tr[week_count].find_elements(By.TAG_NAME,'a')[i_day].click()
-                                    #잠시 쉬어주고
-                                    time.sleep(1)
-                                    #못하는 시간대 체크
-                                    disable_time_list = self.driver.find_elements(By.ID,'layer-select-time')[0].find_elements(By.CLASS_NAME,'disabled')
-                                    enable_time_reserved_flag = True
-                                    if (len(disable_time_list) > 0):
-                                        #print('불가능한 시간 확인 해당 시간이 우리가 찾는 시간인지 확인')
-                                        for item in disable_time_list:
-                                            if(item.text[0:2] == target_time[0:2]):
-                                                print('예약 불가 : 해당시간()',target_time,') 대 예약자가 있음 ',item.text)
-                                                # 불가한 경우 Fail 처리
-                                                if (self.next_month_chk_box.isChecked()): 
-                                                    fail_msg = self.jungu_list[i_jg]+', '+str(next_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 해당시간 예약자가 있음'
-                                                
-                                                else:
-                                                    fail_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 해당시간 예약자가 있음'
-                                                self.fail_list.append(fail_msg)
-                                                enable_time_reserved_flag = False
-                                                
-                                    if (len(disable_time_list) >= 15):
-                                        print('예약 불가 : 모든 시간 대 예약자가 있음 ',item.text)
-                                        # 불가한 경우 Fail 처리
+                                    #print(str(obj_idx+1),'(',day_idx,')일 ',time_title[self.time_combo_box.currentIndex()],' 시간대 예약하기')
+                                    #print(str(i_obj+1)+'일 월요일 확인..')
+                                    if day_enable_obj[obj_idx][1] == False:
+                                        print('예약 불가 : 해당 요일 불가능 지났거나 꽉찼음')
                                         if (self.next_month_chk_box.isChecked()): 
-                                            fail_msg = self.jungu_list[i_jg]+', '+str(next_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 모든 시간대 예약자가 있음'
-                                        
+                                            fail_msg = self.jungu_list[i_jg]+', '+str(next_month)+'/'+str(i_obj+1)+'('+day_idx+') 사유 : 해당 요일 불가능 지났거나 꽉찼음'
                                         else:
-                                            fail_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 모든 시간대 예약자가 있음'
+                                            fail_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')  사유 : 해당 요일 불가능 지났거나 꽉찼음'
                                         self.fail_list.append(fail_msg)
-                                        enable_time_reserved_flag = False
-                                        
-                                    #가능한시간대로 확인되면
-                                    if (enable_time_reserved_flag):
-                                        #해당 시간대 체크
-                                        self.driver.find_elements(By.ID,'layer-select-time')[0].find_elements(By.CLASS_NAME,'check-wrap')[target_time_pos].click()
-                                        time.sleep(1)
-                                        #해당 시간대 클릭
-                                        self.driver.find_elements(By.ID,'layer-select-time')[0].find_elements(By.ID,'btn-order')[0].click()
-                                        #또 쉬어주고
-                                        time.sleep(1)
-                                        self.input_personal_data()
-                                        print('예약 성공')
-                                        if (self.next_month_chk_box.isChecked()): 
-                                            pass_msg = self.jungu_list[i_jg]+', '+str(next_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 성공'
-                                        else:
-                                            pass_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 성공'
-                                        self.pass_list.append(pass_msg)
-                                        self.driver.back()
-                                        time.sleep(1)
-                                        self.driver.back()    
-                                        time.sleep(1)        
                                     else:
-                                        self.driver.back()
-                                        time.sleep(1)        
-                                week_count += 1 #한주 넘기기
-        
-        self.update_item_list()            
+                                        #print('예약가능 해당 요일 예약하기')
+                                        #send 예약
+                                        #click 예약하기, 1 is monday
+                                        
+                                        #weekcount = 0
+                                        #7 일 월 화 수 목 금 토
+                                        #6 월 화 수 목 금 토
+                                        #5 화 수 목 금 토
+                                        #4 수 목 금 토
+                                        #3 목 금 토
+                                        #2 금 토
+                                        #1 토
+                                        
+                                        #weekcount = 5 or 6
+                                        #7 일 월 화 수 목 금 토
+                                        #6 일 월 화 수 목 금 
+                                        #5 일 월 화 수 목 
+                                        #4 일 월 화 수 
+                                        #3 일 월 화 
+                                        #2 일 월 
+                                        #1 일 
+                                        
+                                        size_tr_a = len(table_tr[week_count].find_elements(By.TAG_NAME,'a'))
+                                        if(week_count == 0):
+                                            diff = 7-size_tr_a
+                                            if(diff >= 0):
+                                                table_tr[week_count].find_elements(By.TAG_NAME,'a')[i_day-diff].click()
+                                            else:
+                                                continue
+                                        elif(week_count == len(table_tr)-1):
+                                            if(size_tr_a > i_day):
+                                                table_tr[week_count].find_elements(By.TAG_NAME,'a')[i_day].click()
+                                            else:
+                                                continue
+                                        else:
+                                            if (i_day == 0):
+                                                table_tr[week_count+1].find_elements(By.TAG_NAME,'a')[i_day].click()
+                                            else:
+                                                table_tr[week_count].find_elements(By.TAG_NAME,'a')[i_day].click()
+                                        #잠시 쉬어주고
+                                        time.sleep(1)
+                                        #못하는 시간대 체크
+                                        disable_time_list = self.driver.find_elements(By.ID,'layer-select-time')[0].find_elements(By.CLASS_NAME,'disabled')
+                                        enable_time_reserved_flag_list = [False if target_time_pos_list[0] == 0 else True,
+                                                                            False if target_time_pos_list[1] == 0 else True,
+                                                                            False if target_time_pos_list[2] == 0 else True
+                                                                            ]
+                                        if (len(disable_time_list) < 15):
+                                            #print('불가능한 시간 확인 해당 시간이 우리가 찾는 시간인지 확인')
+                                            for item in disable_time_list:
+                                                for tidx, time_item in enumerate(target_time_pos_list):
+                                                    if time_item == 0: #선택안함
+                                                        continue
+                                                    if(item.text[0:2] == time_title[time_item][0:2]):
+                                                        print('예약 불가 : 해당시간()',time_title[time_item],') 대 예약자가 있음 ',item.text)
+                                                        if (self.next_month_chk_box.isChecked()): 
+                                                            fail_msg = self.jungu_list[i_jg]+', '+str(next_month)+'/'+str(i_obj+1)+'('+day_idx+')'+time_title[time_item]+' 사유 : 해당시간 예약자가 있음'
+                                                        else:
+                                                            fail_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+time_title[time_item]+' 사유 : 해당시간 예약자가 있음'
+                                                        self.fail_list.append(fail_msg)
+                                                        enable_time_reserved_flag_list[tidx] = False
+                                                #if(item.text[0:2] == target_time[0:2]):
+                                                #    print('예약 불가 : 해당시간()',target_time,') 대 예약자가 있음 ',item.text)
+                                                #    # 불가한 경우 Fail 처리
+                                                #    if (self.next_month_chk_box.isChecked()): 
+                                                #        fail_msg = self.jungu_list[i_jg]+', '+str(next_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 해당시간 예약자가 있음'
+                                                #    
+                                                #    else:
+                                                #        fail_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time+' 사유 : 해당시간 예약자가 있음'
+                                                #    self.fail_list.append(fail_msg)
+                                                #    enable_time_reserved_flag = False
+                                        elif (len(disable_time_list) >= 15):
+                                            print('예약 불가 : 모든 시간 대 예약자가 있음 ',item.text)
+                                            # 불가한 경우 Fail 처리
+                                            if (self.next_month_chk_box.isChecked()): 
+                                                fail_msg = self.jungu_list[i_jg]+', '+str(next_month)+'/'+str(i_obj+1)+'('+day_idx+')  사유 : 모든 시간대 예약자가 있음'
+                                            
+                                            else:
+                                                fail_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')  사유 : 모든 시간대 예약자가 있음'
+                                            self.fail_list.append(fail_msg)
+                                            enable_time_reserved_flag_list[0] = False
+                                            enable_time_reserved_flag_list[1] = False
+                                            enable_time_reserved_flag_list[2] = False
+                                            
+                                        if (enable_time_reserved_flag_list[0]|enable_time_reserved_flag_list[1]|enable_time_reserved_flag_list[1] == True):
+                                            #가능한시간대로 확인되면
+                                            for idx, item in enumerate(enable_time_reserved_flag_list):
+                                                if (item):
+                                                #해당 시간대 체크 ez-layer-contents-wrap
+                                                    #self.driver.find_elements(By.ID,'layer-select-time')[0].find_elements(By.CLASS_NAME,'check-wrap')[target_time_pos_list[idx]-1].click()
+                                                    self.driver.find_elements(By.ID,'layer-select-time')[0].find_elements(By.CLASS_NAME,'check-wrap')[target_time_pos_list[idx]-1].click()
+                                                    time.sleep(1)
+                                            #해당 시간대 클릭
+                                            #self.driver.find_elements(By.ID,'layer-select-time')[0].find_elements(By.ID,'btn-order')[0].click()
+                                            self.driver.find_element(By.ID,'layer-select-time').find_elements(By.ID,'btn-order')[0].click()
+                                            time.sleep(1)
+                                            #또 쉬어주고
+                                            time.sleep(1)
+                                            self.input_personal_data()
+                                            print('예약 성공')
+                                            for idx, item in enumerate(enable_time_reserved_flag_list):
+                                                if (item):
+                                                    if (self.next_month_chk_box.isChecked()): 
+                                                        pass_msg = self.jungu_list[i_jg]+', '+str(next_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time_list[idx]+' 성공'
+                                                    else:
+                                                        pass_msg = self.jungu_list[i_jg]+', '+str(current_month)+'/'+str(i_obj+1)+'('+day_idx+')'+target_time_list[idx]+' 성공'
+                                                    self.pass_list.append(pass_msg)
+                                            self.driver.back()
+                                            time.sleep(1)
+                                            self.driver.back()
+                                            time.sleep(1)
+                                        else:
+                                            self.driver.back()
+                                            time.sleep(1)                                                   
+                                                        
+                                    week_count += 1 #한주 넘기기
+            
+            self.update_item_list()            
         
     def input_personal_data(self):
         #print('사용자 정보 입력창 진입')
@@ -301,8 +354,8 @@ class MyApp(QMainWindow, Ui_Auto):
         alert = self.driver.switch_to.alert
         alert.accept()
         time.sleep(1)
-        self.driver.back() 
-        #self.driver.back() 
+        self.driver.back()
+        
         #신청자명 유형민
         #연락처 010-5363-3809
         #환불계좌 3520395979943 농협 
