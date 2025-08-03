@@ -160,7 +160,7 @@ class MyApp(QMainWindow, Ui_AutoTennis):
                     current_month = int(current_date.split(' ')[1].replace('월',''))
                     #?indate=2024/5/1
                     if (self.next_month_chk_box.isChecked()): 
-                        next_year = 2024
+                        next_year = 2025
                         next_month = 1
                         if(current_month+1 == 13):
                             next_year = current_year + 1
@@ -233,22 +233,29 @@ class MyApp(QMainWindow, Ui_AutoTennis):
                                         #1 일 
                                         
                                         size_tr_a = len(table_tr[week_count].find_elements(By.TAG_NAME,'a'))
+                                        
                                         if(week_count == 0):
+                                            #첫번째에, 시작점이 2개인데, 수요일(3)이다
+                                            #7개면 일요일 6개면 월...
+                                            #iday+size_tr이 7이상이 되야함
                                             diff = 7-size_tr_a
-                                            if(diff >= 0):
+                                            if(diff >= 0 and (size_tr_a+i_day) >= 7):
                                                 table_tr[week_count].find_elements(By.TAG_NAME,'a')[i_day-diff].click()
                                             else:
+                                                week_count += 1
                                                 continue
                                         elif(week_count == len(table_tr)-1):
                                             if(size_tr_a > i_day):
                                                 table_tr[week_count].find_elements(By.TAG_NAME,'a')[i_day].click()
                                             else:
+                                                week_count += 1
                                                 continue
                                         else:
                                             if (i_day == 0):
                                                 table_tr[week_count+1].find_elements(By.TAG_NAME,'a')[i_day].click()
                                             else:
                                                 table_tr[week_count].find_elements(By.TAG_NAME,'a')[i_day].click()
+                                        
                                         #잠시 쉬어주고
                                         time.sleep(1)
                                         #못하는 시간대 체크
@@ -282,7 +289,7 @@ class MyApp(QMainWindow, Ui_AutoTennis):
                                                 #    self.fail_list.append(fail_msg)
                                                 #    enable_time_reserved_flag = False
                                         elif (len(disable_time_list) >= 15):
-                                            print('예약 불가 : 모든 시간 대 예약자가 있음 ',item.text)
+                                            print('예약 불가 : 모든 시간 대 예약자가 있음 ')
                                             # 불가한 경우 Fail 처리
                                             if (self.next_month_chk_box.isChecked()): 
                                                 fail_msg = self.jungu_list[i_jg]+', '+str(next_month)+'/'+str(i_obj+1)+'('+day_idx+')  사유 : 모든 시간대 예약자가 있음'
