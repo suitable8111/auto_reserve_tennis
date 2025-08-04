@@ -11,6 +11,7 @@ from selenium.webdriver.common.keys import Keys
 from data import time_title
 from PySide6.QtCore import QDate, QStringListModel
 from datetime import datetime, date
+import multiprocessing # Import multiprocessing
 path = os.path.dirname(os.path.abspath(__file__))
 
 class MyApp(QMainWindow, Ui_AutoTennis):
@@ -84,7 +85,7 @@ class MyApp(QMainWindow, Ui_AutoTennis):
         #self.driver = webdriver.Chrome(service= Service(ChromeDriverManager().install()))
         driver_path = ChromeDriverManager().install()
         correct_driver_path = os.path.join(os.path.dirname(driver_path), "chromedriver.exe")
-        self.driver = webdriver.Chrome(service=Service(executable_path=correct_driver_path), options=chrome_options)
+        #self.driver = webdriver.Chrome(service=Service(executable_path=correct_driver_path), options=chrome_options) # Driver initialized per process
         
         self.time_combo_box_list = [
             self.time_combo_box,
@@ -336,58 +337,126 @@ class MyApp(QMainWindow, Ui_AutoTennis):
             
             self.update_item_list()            
         
-    def input_personal_data(self):
-        #print('사용자 정보 입력창 진입')
-        name = self.driver.find_elements(By.ID,'name1')[0] #신청자명
-        tel_info = self.driver.find_elements(By.ID,'tel1')[0] #연락처
-        return_account = self.driver.find_elements(By.ID,'ext5')[0] #환불계좌
-        return_account_com = self.driver.find_elements(By.ID,'ext8')[0] #환불은행
-        gilud = self.driver.find_elements(By.ID,'com1')[0] #단체명
-        num_of_people = self.driver.find_elements(By.ID,'area2')[0] #이용인원 #디폴트는 2
-        match_name = self.driver.find_elements(By.ID,'subject1')[0] #경기(행사)명
-        match_propose = self.driver.find_elements(By.ID,'content1')[0] #이용목적
+    # Helper function for personal data input
+def _input_personal_data(driver):
+    #print('사용자 정보 입력창 진입')
+    name = driver.find_elements(By.ID,'name1')[0] #신청자명
+    tel_info = driver.find_elements(By.ID,'tel1')[0] #연락처
+    return_account = driver.find_elements(By.ID,'ext5')[0] #환불계좌
+    return_account_com = driver.find_elements(By.ID,'ext8')[0] #환불은행
+    gilud = driver.find_elements(By.ID,'com1')[0] #단체명
+    num_of_people = driver.find_elements(By.ID,'area2')[0] #이용인원 #디폴트는 2
+    match_name = driver.find_elements(By.ID,'subject1')[0] #경기(행사)명
+    match_propose = driver.find_elements(By.ID,'content1')[0] #이용목적
+    
+    name.send_keys('유형민')
+    tel_info.send_keys('010-5363-3809')
+    return_account.send_keys('3520395979943')
+    return_account_com.send_keys('농협')
+    gilud.send_keys('하이랠리')
+    match_name.send_keys('하이랠리 경기')
+    match_propose.send_keys('친목도모')
+    
+    time.sleep(1.0)
+    driver.find_elements(By.CLASS_NAME,'page-btn')[0].click()
+    time.sleep(1)
+    alert = driver.switch_to.alert
+    alert.accept()
+    time.sleep(1)
+    driver.back()
+
+# Function to perform a single reservation attempt
+def _perform_single_reservation(url, jungu_name, current_year, current_month, next_month_checked, day_of_week_kor, day_num, target_time_list, target_time_pos_list, driver_path, result_queue):
+    try:
+        chrome_options = webdriver.ChromeOptions()
+        # Each process gets its own driver
+        driver = webdriver.Chrome(service=Service(executable_path=driver_path), options=chrome_options)
         
-        name.send_keys('유형민')
-        tel_info.send_keys('010-5363-3809')
-        return_account.send_keys('3520395979943')
-        return_account_com.send_keys('농협')
-        gilud.send_keys('하이랠리')
-        match_name.send_keys('하이랠리 경기')
-        match_propose.send_keys('친목도모')
-        
-        time.sleep(1.0)
-        self.driver.find_elements(By.CLASS_NAME,'page-btn')[0].click()
+        driver.get(url)
         time.sleep(1)
-        alert = self.driver.switch_to.alert
-        alert.accept()
-        time.sleep(1)
-        self.driver.back()
+
+        # Re-calculate current_year/month if next_month_checked
+        reserve_year = current_year
+        reserve_month = current_month
+        if next_month_checked:
+            if current_month + 1 == 13:
+                reserve_year += 1
+                reserve_month = 1
+            else:
+                reserve_month += 1
+            next_text = "?indate="+str(reserve_year)+"/"+str(reserve_month)+"/1"
+            driver.get(url+next_text)
+            time.sleep(2)
         
-        #신청자명 유형민
-        #연락처 010-5363-3809
-        #환불계좌 3520395979943 농협 
-        #모임명 하이랠리 
-        # data-weekday = 0(일)~6(토)
-        # data-weeks = 0(첫주)~
-        # tr의 data-tr-idx 과 동일
-        # btn btn-primary ez-layer-btn 예약버튼
+        # Find the correct day link directly
+        try:
+            day_link = driver.find_element(By.XPATH, f"//a[text()='{day_num}']")
+            day_link.click()
+            time.sleep(1)
+        except Exception as e:
+            print(f"Could not find or click day {day_num}: {e}")
+            result_queue.put(('fail', f"{jungu_name}, {reserve_month}/{day_num}({day_of_week_kor}) 사유 : 날짜 클릭 실패"))
+            driver.quit()
+            return
 
-        # check-wrap 체크박스 클래스
-        # value 21 --> 21:00
-        # btn btn-info btn-xs btn-check 예약하는 버튼
+        disable_time_list = driver.find_elements(By.ID,'layer-select-time')[0].find_elements(By.CLASS_NAME,'disabled')
+        enable_time_reserved_flag_list = [False if t_pos == 0 else True for t_pos in target_time_pos_list]
         
-        #<input type="submit" id="btn-order" value="예약하기" class="page-btn btn-blue"> 최종 예약하는 버튼
+        # Check for disabled times
+        if len(disable_time_list) < 15:
+            for item in disable_time_list:
+                for tidx, time_item_pos in enumerate(target_time_pos_list):
+                    if time_item_pos == 0: # Not selected
+                        continue
+                    if item.text[0:2] == time_title[time_item_pos][0:2]:
+                        print(f'예약 불가 : 해당시간({time_title[time_item_pos]}) 대 예약자가 있음 {item.text}')
+                        result_queue.put(('fail', f"{jungu_name}, {reserve_month}/{day_num}({day_of_week_kor}){time_title[time_item_pos]} 사유 : 해당시간 예약자가 있음"))
+                        enable_time_reserved_flag_list[tidx] = False
+        elif len(disable_time_list) >= 15:
+            print('예약 불가 : 모든 시간 대 예약자가 있음 ')
+            result_queue.put(('fail', f"{jungu_name}, {reserve_month}/{day_num}({day_of_week_kor}) 사유 : 모든 시간대 예약자가 있음"))
+            for i in range(len(enable_time_reserved_flag_list)):
+                enable_time_reserved_flag_list[i] = False
 
+        if any(enable_time_reserved_flag_list):
+            for idx, item_enabled in enumerate(enable_time_reserved_flag_list):
+                if item_enabled:
+                    driver.find_elements(By.ID,'layer-select-time')[0].find_elements(By.CLASS_NAME,'check-wrap')[target_time_pos_list[idx]-1].click()
+                    time.sleep(1)
+            
+            driver.find_element(By.ID,'layer-select-time').find_elements(By.ID,'btn-order')[0].click()
+            time.sleep(1)
+            alert = driver.switch_to.alert
+            alert.accept() # Accept the first alert (e.g., "예약하시겠습니까?")
+            time.sleep(1)
+            
+            # Check for a second alert (e.g., "예약되었습니다")
+            try:
+                alert = driver.switch_to.alert
+                alert.accept() # Accept the second alert (e.g., "예약되었습니다")
+                time.sleep(1)
+            except:
+                # No second alert, proceed
+                pass
 
-        #<input label="신청자명" type="text" id="name1" name="name1" class="ez_required uk-input uk-form-small" style="width:100%;max-width:300px" placeholder="신청자명">
-        #<input label="연락처" type="text" id="tel1" name="tel1" class="ez_required uk-input uk-form-small inline-block phone-number" style="width:100%;max-width:150px" maxlength="13" placeholder="010-1234-5678">
-        #<input label="환불계좌" type="text" id="ext5" name="ext5" class="ez_required form-control inline-block" style="width:100%;max-width:200px" placeholder="환불계좌"> / <input label="은행" type="text" id="ext8" name="ext8" class="ez_required form-control inline-block" style="width:100%;max-width:100px" placeholder="은행">
-        #<input label="단체명" type="text" id="com1" name="com1" class="uk-input uk-form-small" style="width:100%;max-width:300px" placeholder="단체명">
-        #<input label="이용인원" type="text" id="area2" name="area2" value="2" class="ez_required uk-input uk-form-small number-only inline-block" style="width:100%;max-width:50px" maxlength="2" placeholder="">
-        #<input label="경기(행사)명" type="text" id="subject1" name="subject1" class="uk-input uk-form-small" style="width:100%;max-width:300px" placeholder="경기(행사)명">
-        #<textarea label="이용목적" id="content1" name="content1" class="uk-input" style="width:100%;height:60px" placeholder="이용목적"></textarea>
-
-        #<input type="submit" value="저장" class="page-btn btn-blue">
+            _input_personal_data(driver) # Pass the driver instance
+            print('예약 성공')
+            for idx, item_enabled in enumerate(enable_time_reserved_flag_list):
+                if item_enabled:
+                    result_queue.put(('pass', f"{jungu_name}, {reserve_month}/{day_num}({day_of_week_kor}){target_time_list[idx]} 성공"))
+            driver.back()
+            time.sleep(1)
+            driver.back()
+            time.sleep(1)
+        else:
+            driver.back()
+            time.sleep(1)
+    except Exception as e:
+        print(f"Error during reservation for {jungu_name}, {reserve_month}/{day_num}({day_of_week_kor}): {e}")
+        result_queue.put(('fail', f"{jungu_name}, {reserve_month}/{day_num}({day_of_week_kor}) 사유 : 예약 중 오류 발생 - {e}"))
+    finally:
+        if 'driver' in locals() and driver:
+            driver.quit() # Ensure driver is closed
         
 def main():
     app = QApplication(sys.argv)
