@@ -38,16 +38,18 @@ def _input_personal_data(driver):
 
         time.sleep(1.0)
         # "신청하기" 버튼 클릭
-        driver.find_element(By.XPATH, "//a[contains(text(), '신청하기')]").click()
+        # "신청하기" 버튼 클릭
+        driver.find_elements(By.CLASS_NAME,'page-btn')[0].click()
         time.sleep(1)
         alert = driver.switch_to.alert
         alert.accept()
         time.sleep(1)
+        
     except Exception as e:
         print(f"개인 정보 입력 중 오류 발생: {e}")
 
 
-def _reserve_court_worker(jungu_url, jungu_name, target_time_list, target_time_pos_list, next_month_checked, selected_day_indices, day_kor_list, day_list, result_queue):
+def _reserve_court_worker(jungu_url, jungu_name, target_time_list, target_time_pos_list, next_month_checked, selected_day_indices, day_kor_list, day_list, check_box_list, fail_list, pass_list):
     """
     하나의 코트 종류에 대한 예약을 처리하는 워커 함수 (멀티프로세싱용)
     """
@@ -61,9 +63,13 @@ def _reserve_court_worker(jungu_url, jungu_name, target_time_list, target_time_p
     driver = None
     try:
         # 각 워커가 직접 드라이버를 설치하고 서비스 시작
-        service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=chrome_options)
-        
+        if sys.platform == "win32":
+            service = ChromeDriverManager().install()
+            correct_driver_path = os.path.join(os.path.dirname(service), "chromedriver.exe")
+            driver = webdriver.Chrome(service=Service(executable_path=correct_driver_path), options=chrome_options)
+        elif sys.platform == "darwin":
+            service = Service(ChromeDriverManager().install())
+            driver = webdriver.Chrome(service=service, options=chrome_options)
         driver.get(jungu_url)
         time.sleep(1)
 
@@ -82,78 +88,96 @@ def _reserve_court_worker(jungu_url, jungu_name, target_time_list, target_time_p
             driver.get(jungu_url + next_text)
             time.sleep(2)
 
-        day_enable_obj = {}
+        table_tr = driver.find_elements(By.TAG_NAME,'tr')
+        table_tr.pop(0)
+        table_tr.pop(5)
         
-        all_day_links = driver.find_elements(By.XPATH, "//td[a[@class='choice']]")
-        for day_link in all_day_links:
-            day_num_str = day_link.find_element(By.TAG_NAME, 'a').text
-            if not day_num_str.isdigit():
-                continue
-            day_num = int(day_num_str)
-            try:
-                day_name = what_day_is_it(date(reserve_year, reserve_month, day_num), day_list)
-                is_enabled = '예약가능' in day_link.text
-                day_enable_obj[day_num] = [day_name, is_enabled]
-            except ValueError:
-                continue
-
-        for i_day in selected_day_indices:
-            for day_num, (day_name, is_enabled) in day_enable_obj.items():
-                if day_name == day_kor_list[i_day]:
-                    if not is_enabled:
-                        fail_msg = f"{jungu_name}, {reserve_month}/{day_num}({day_kor_list[i_day]}) 사유: 해당 날짜 예약 불가능(마감 또는 휴일)"
-                        result_queue.put(('fail', fail_msg))
-                    else:
-                        try:
-                            # 날짜 클릭
-                            day_links = driver.find_elements(By.XPATH, f"//a[text()='{day_num}']")
-                            if not day_links: continue
-                            day_links[0].click()
-                            time.sleep(1)
-
-                            # 시간 선택 로직
-                            disable_time_list = driver.find_elements(By.ID, 'layer-select-time')[0].find_elements(By.CLASS_NAME, 'disabled')
-                            enable_time_reserved_flag_list = [t_pos != 0 for t_pos in target_time_pos_list]
-
-                            for item in disable_time_list:
-                                for tidx, time_item_pos in enumerate(target_time_pos_list):
-                                    if time_item_pos != 0 and item.text[0:2] == time_title[time_item_pos][0:2]:
-                                        fail_msg = f"{jungu_name}, {reserve_month}/{day_num}({day_kor_list[i_day]}) {time_title[time_item_pos]} 사유: 해당 시간 예약자 있음"
-                                        result_queue.put(('fail', fail_msg))
-                                        enable_time_reserved_flag_list[tidx] = False
+        day_enable_obj = {}
+        day_count = 1
+        
+        for tr_idx in table_tr:
+            item = tr_idx.text.split('\n')
+            for j,jdx in enumerate(item):
+                if(j % 2 == 1):
+                    current_day_to_check = date(reserve_year, reserve_month, day_count) if next_month_checked else date(current_year, current_month, day_count)
+                    what_day = what_day_is_it(current_day_to_check, day_list)
+                    enable_flag = '예약가능' in jdx
+                    day_enable_obj[day_count] = [what_day, enable_flag]
+                    day_count += 1  
+                    
+        for i_day, day_kor_name in enumerate(day_kor_list):
+            if check_box_list[i_day]:
+                time.sleep(1)
+                
+                week_count = 0
+                for i_obj, obj_idx in enumerate(day_enable_obj):
+                    if day_enable_obj[obj_idx][0] == day_kor_name:
+                        
+                        if not day_enable_obj[obj_idx][1]:
+                            print('예약 불가 : 해당 요일 불가능 지났거나 꽉찼음')
+                            month_str = reserve_month if next_month_checked else current_month
+                            fail_msg = f"{jungu_name}, {month_str}/{i_obj+1}({day_kor_name}) 사유 : 해당 요일 불가능 지났거나 꽉찼음"
+                            fail_list.append(fail_msg)
+                        else:
+                            size_tr_a = len(table_tr[week_count].find_elements(By.TAG_NAME,'a'))
                             
+                            clicked = False
+                            if week_count == 0:
+                                diff = 7 - size_tr_a
+                                if diff >= 0 and (i_day - diff) >= 0 and (i_day-diff) < size_tr_a:
+                                    table_tr[week_count].find_elements(By.TAG_NAME,'a')[i_day-diff].click()
+                                    clicked = True
+                            elif i_day < size_tr_a:
+                                table_tr[week_count].find_elements(By.TAG_NAME,'a')[i_day].click()
+                                clicked = True
+
+                            if not clicked:
+                                week_count += 1
+                                continue
+
+                            time.sleep(1)
+                            disable_time_list = driver.find_elements(By.ID,'layer-select-time')[0].find_elements(By.CLASS_NAME,'disabled')
+                            enable_time_reserved_flag_list = [pos != 0 for pos in target_time_pos_list]
+
+                            month_str = reserve_month if next_month_checked else current_month
+                            day_str = f"{month_str}/{i_obj+1}({day_kor_name})"
+
+                            if len(disable_time_list) >= 15:
+                                fail_msg = f"{jungu_name}, {day_str} 사유 : 모든 시간대 예약자가 있음"
+                                fail_list.append(fail_msg)
+                                enable_time_reserved_flag_list = [False, False, False]
+                            else:
+                                for item in disable_time_list:
+                                    for tidx, time_pos in enumerate(target_time_pos_list):
+                                        if time_pos != 0 and item.text.startswith(time_title[time_pos][0:2]):
+                                            fail_msg = f"{jungu_name}, {day_str}{time_title[time_pos]} 사유 : 해당시간 예약자가 있음"
+                                            fail_list.append(fail_msg)
+                                            enable_time_reserved_flag_list[tidx] = False
+                                
                             if any(enable_time_reserved_flag_list):
-                                for idx, item_enabled in enumerate(enable_time_reserved_flag_list):
-                                    if item_enabled:
-                                        driver.find_elements(By.ID, 'layer-select-time')[0].find_elements(By.CLASS_NAME, 'check-wrap')[target_time_pos_list[idx] - 1].click()
+                                for idx, is_enabled in enumerate(enable_time_reserved_flag_list):
+                                    if is_enabled:
+                                        driver.find_elements(By.ID,'layer-select-time')[0].find_elements(By.CLASS_NAME,'check-wrap')[target_time_pos_list[idx]-1].click()
                                         time.sleep(0.5)
-                                
-                                driver.find_element(By.ID, 'layer-select-time').find_element(By.ID, 'btn-order').click()
+                                driver.find_element(By.ID,'layer-select-time').find_element(By.ID,'btn-order').click()
                                 time.sleep(1)
-                                
                                 _input_personal_data(driver)
-                                
-                                for idx, item_enabled in enumerate(enable_time_reserved_flag_list):
-                                    if item_enabled:
-                                        pass_msg = f"{jungu_name}, {reserve_month}/{day_num}({day_kor_list[i_day]}) {target_time_list[idx]} 성공"
-                                        result_queue.put(('pass', pass_msg))
-                                
-                                driver.get(jungu_url + (f"?indate={reserve_year}/{reserve_month}/1" if next_month_checked else ""))
+                                print('예약 성공')
+                                for idx, is_enabled in enumerate(enable_time_reserved_flag_list):
+                                    if is_enabled:
+                                        pass_msg = f"{jungu_name}, {day_str}{target_time_list[idx]} 성공"
+                                        pass_list.append(pass_msg)
+                                driver.back()
+                                time.sleep(1)
+                                driver.back()
                                 time.sleep(1)
                             else:
-                                driver.back() # 시간 선택 창 닫기
-                                time.sleep(1)
-
-                        except Exception as e:
-                            fail_msg = f"{jungu_name}, {reserve_month}/{day_num}({day_kor_list[i_day]}) 사유: 예약 중 오류 발생 - {e}"
-                            result_queue.put(('fail', fail_msg))
-                            driver.get(jungu_url + (f"?indate={reserve_year}/{reserve_month}/1" if next_month_checked else ""))
-                            time.sleep(1)
-
-
+                                driver.back()
+                                time.sleep(1)                                                   
+                                            
+                        week_count += 1
     except Exception as e:
         print(f"Worker error for {jungu_name}: {e}")
-        result_queue.put(('fail', f"{jungu_name} 처리 중 심각한 오류 발생: {e}"))
     finally:
         if driver:
             driver.quit()
@@ -254,17 +278,21 @@ class MyApp(QMainWindow, Ui_AutoTennis):
             return
             
         manager = Manager()
-        result_queue = manager.Queue()
+        fail_list = manager.list()
+        pass_list = manager.list()
         processes = []
+
+        checked_days_list = [box.isChecked() for box in self.check_box_list]
+        next_month_checked = self.next_month_chk_box.isChecked()
 
         for court_info in selected_courts_info:
             p = Process(
                 target=_reserve_court_worker,
                 args=(
                     court_info['url'], court_info['name'], target_time_list,
-                    target_time_pos_list, self.next_month_chk_box.isChecked(),
+                    target_time_pos_list, next_month_checked,
                     selected_day_indices, self.day_kor_list, self.day_list,
-                    result_queue
+                    checked_days_list, fail_list, pass_list
                 )
             )
             processes.append(p)
@@ -276,12 +304,8 @@ class MyApp(QMainWindow, Ui_AutoTennis):
                 QCoreApplication.processEvents()
                 p.join(timeout=0.1)
 
-        while not result_queue.empty():
-            result_type, msg = result_queue.get()
-            if result_type == 'pass':
-                self.pass_list.append(msg)
-            else:
-                self.fail_list.append(msg)
+        self.fail_list.extend(list(fail_list))
+        self.pass_list.extend(list(pass_list))
 
         self.update_item_list()
         QMessageBox.information(self, "완료", "예약 시도가 모두 완료되었습니다.")
@@ -292,7 +316,7 @@ def main():
     app = QApplication(sys.argv)
     window = MyApp()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 if __name__ == "__main__":
     main()
