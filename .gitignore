@@ -4,5 +4,5 @@ venv/
 driver/
 dist/
 build/
-
+.venv/
 main.spec
