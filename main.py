@@ -235,11 +235,19 @@ class MyApp(QMainWindow, Ui_AutoTennis):
         self.time3_combo_box.setCurrentIndex(16) # 21:00~21:30
         self.yaw3_chk_box.setChecked(True)
         self.yaw4_chk_box.setChecked(True)
-        self.yaw7_chk_box.setChecked(True)
-        self.jungu1_chk_box.setChecked(True)
-        self.jungu2_chk_box.setChecked(True)
-        self.jungu3_chk_box.setChecked(True)
-        self.jungu4_chk_box.setChecked(True)
+        #self.yaw7_chk_box.setChecked(True)
+        #self.jungu1_chk_box.setChecked(True)
+        #self.jungu2_chk_box.setChecked(True)
+        #self.jungu3_chk_box.setChecked(True)
+        #self.jungu4_chk_box.setChecked(True)
+        self.mon_chk_box.setChecked(True)
+        #self.tue_chk_box.setChecked(True)
+        self.wed_chk_box.setChecked(True)
+        #self.thu_chk_box.setChecked(True)
+        self.fri_chk_box.setChecked(True)
+        self.sun_chk_box.setChecked(True)
+        self.sat_chk_box.setChecked(True)
+
 
         self.update_item_list()
 
@@ -282,27 +290,30 @@ class MyApp(QMainWindow, Ui_AutoTennis):
         pass_list = manager.list()
         processes = []
 
-        checked_days_list = [box.isChecked() for box in self.check_box_list]
         next_month_checked = self.next_month_chk_box.isChecked()
 
-        for court_info in selected_courts_info:
-            p = Process(
-                target=_reserve_court_worker,
-                args=(
-                    court_info['url'], court_info['name'], target_time_list,
-                    target_time_pos_list, next_month_checked,
-                    selected_day_indices, self.day_kor_list, self.day_list,
-                    checked_days_list, fail_list, pass_list
+        for day_index in selected_day_indices:
+            day_specific_checkbox_list = [i == day_index for i in range(len(self.day_kor_list))]
+            for court_info in selected_courts_info:
+                courts_name = court_info['name']
+                print(f'start action : {self.day_list[day_index]} and {courts_name}')
+                p = Process(
+                    target=_reserve_court_worker,
+                    args=(
+                        court_info['url'], court_info['name'], target_time_list,
+                        target_time_pos_list, next_month_checked,
+                        [day_index], self.day_kor_list, self.day_list,
+                        day_specific_checkbox_list, fail_list, pass_list
+                    )
                 )
-            )
-            processes.append(p)
-            p.start()
+                processes.append(p)
+                p.start()
 
         # 모든 프로세스가 끝날 때까지 기다리면서 GUI가 멈추지 않도록 처리
         for p in processes:
             while p.is_alive():
                 QCoreApplication.processEvents()
-                p.join(timeout=0.1)
+                p.join(timeout=5)
 
         self.fail_list.extend(list(fail_list))
         self.pass_list.extend(list(pass_list))
