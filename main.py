@@ -68,6 +68,12 @@ def _reserve_court_worker(jungu_url, jungu_name, target_time_list, target_time_p
             correct_driver_path = os.path.join(os.path.dirname(service), "chromedriver.exe")
             driver = webdriver.Chrome(service=Service(executable_path=correct_driver_path), options=chrome_options)
         elif sys.platform == "darwin":
+            driver_path = ChromeDriverManager().install()
+            if "THIRD_PARTY_NOTICES" in driver_path:
+                driver_path = os.path.join(os.path.dirname(driver_path), "chromedriver")
+            service = Service(executable_path=driver_path)
+            driver = webdriver.Chrome(service=service, options=chrome_options)
+        else:
             service = Service(ChromeDriverManager().install())
             driver = webdriver.Chrome(service=service, options=chrome_options)
         driver.get(jungu_url)
