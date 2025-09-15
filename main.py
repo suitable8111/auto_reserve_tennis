@@ -1,15 +1,18 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QPushButton
 from ui_mainWindow import Ui_AutoTennis  # Import the generated UI file
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+import json
+
 import os
 import time
 from selenium.webdriver.common.keys import Keys
 from data import time_title
-from PySide6.QtCore import QDate, QStringListModel, QCoreApplication
+from PySide6.QtCore import QDate, QStringListModel, QCoreApplication, QRect
 from datetime import datetime, date
 import multiprocessing
 from multiprocessing import Process, Manager
@@ -49,7 +52,7 @@ def _input_personal_data(driver):
         print(f"개인 정보 입력 중 오류 발생: {e}")
 
 
-def _reserve_court_worker(jungu_url, jungu_name, target_time_list, target_time_pos_list, next_month_checked, selected_day_indices, day_kor_list, day_list, check_box_list, fail_list, pass_list):
+def _reserve_court_worker(lock, jungu_url, jungu_name, target_time_list, target_time_pos_list, next_month_checked, selected_day_indices, day_kor_list, day_list, check_box_list, fail_list, pass_list):
     """
     하나의 코트 종류에 대한 예약을 처리하는 워커 함수 (멀티프로세싱용)
     """
@@ -62,14 +65,10 @@ def _reserve_court_worker(jungu_url, jungu_name, target_time_list, target_time_p
     # chrome_options.add_argument("--no-sandbox")
     driver = None
     try:
-        # 각 워커가 직접 드라이버를 설치하고 서비스 시작
-        if sys.platform == "win32":
-            service = ChromeDriverManager().install()
-            correct_driver_path = os.path.join(os.path.dirname(service), "chromedriver.exe")
-            driver = webdriver.Chrome(service=Service(executable_path=correct_driver_path), options=chrome_options)
-        elif sys.platform == "darwin":
-            service = Service(ChromeDriverManager().install())
-            driver = webdriver.Chrome(service=service, options=chrome_options)
+        # 드라이버 초기화 시 충돌을 막기 위해 lock 사용
+        with lock:
+            driver = webdriver.Chrome(options=chrome_options)
+        
         driver.get(jungu_url)
         time.sleep(1)
 
@@ -221,6 +220,10 @@ class MyApp(QMainWindow, Ui_AutoTennis):
 
         self.actionButton.clicked.connect(self.on_clicked_auto_reservce)
 
+        self.checkReservationButton = QPushButton("예약 내용 확인", self)
+        self.checkReservationButton.setGeometry(QRect(420, 670, 120, 32))
+        self.checkReservationButton.clicked.connect(self.check_reservation)
+
         self.fail_model = QStringListModel()
         self.fail_list_view.setModel(self.fail_model)
         self.pass_model = QStringListModel()
@@ -288,6 +291,7 @@ class MyApp(QMainWindow, Ui_AutoTennis):
         manager = Manager()
         fail_list = manager.list()
         pass_list = manager.list()
+        lock = manager.Lock()
         processes = []
 
         next_month_checked = self.next_month_chk_box.isChecked()
@@ -300,6 +304,7 @@ class MyApp(QMainWindow, Ui_AutoTennis):
                 p = Process(
                     target=_reserve_court_worker,
                     args=(
+                        lock,
                         court_info['url'], court_info['name'], target_time_list,
                         target_time_pos_list, next_month_checked,
                         [day_index], self.day_kor_list, self.day_list,
@@ -320,6 +325,75 @@ class MyApp(QMainWindow, Ui_AutoTennis):
 
         self.update_item_list()
         QMessageBox.information(self, "완료", "예약 시도가 모두 완료되었습니다.")
+
+    def check_reservation(self):
+        try:
+            chrome_options = webdriver.ChromeOptions()
+            chrome_options.add_experimental_option("detach", True)
+            
+            driver = webdriver.Chrome(options=chrome_options)
+            wait = WebDriverWait(driver, 10)
+            
+            # Login part
+            driver.get("https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%88%EC%95%BD%ED%99%95%EC%9D%B8-%EC%B7%A8%EC%86%8C/?mode=login")
+            name_input = wait.until(EC.presence_of_element_located((By.ID, 'name1')))
+            phone_input = driver.find_element(By.ID, 'tel1')
+            name_input.send_keys('유형민')
+            phone_input.send_keys('010-5363-3809')
+            login_button = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'page-btn')))
+            login_button.click()
+
+            # User requested delay
+            time.sleep(5)
+
+            # Crawling part
+            
+
+            all_reservations = []
+            base_url = "https://wjpsc.or.kr/%EC%8B%9C%EC%84%A4%EC%98%A8%EB%9D%BC%EC%9D%B8%EC%98%88%EC%95%BD/%EC%8B%9C%EC%84%A4%EB%AC%BC%EC%98%88%EC%95%BD%ED%99%95%EC%9D%B8-%EC%B7%A8%EC%86%8C/"
+
+            for page_num in range(1, 11):
+                url = base_url + f"?pg={page_num}"
+                driver.get(url)
+                
+                try:
+                    #wait.until(EC.presence_of_element_located((By.ID, "min-size")))
+                    #wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, ".tbl-list > tbody")))
+                    
+                    table_body = driver.find_element(By.ID, "min-size")
+                    rows = table_body.find_elements(By.CLASS_NAME, "mouseEnterLeave")
+                    
+                    if len(rows) == 1 and ("데이터가 없습니다" in rows[0].text or "데이터가 존재하지 않습니다" in rows[0].text):
+                        if page_num > 1:
+                            break
+                        else:
+                            continue
+
+                    for row in rows:
+                        cols = row.find_elements(By.TAG_NAME, "td")
+                        if len(cols) == 7:
+                            reservation_data = {
+                                "예약일": cols[0].text,
+                                "시설명": cols[1].text,
+                                "시간": cols[2].text,
+                                "단체명": cols[3].text,
+                                "상태": cols[4].text,
+                                "접수일": cols[5].text
+                            }
+                            all_reservations.append(reservation_data)
+                except TimeoutException:
+                    print(f"Page {page_num} 에서 테이블을 찾을 수 없어 중단합니다.")
+                    break
+
+            os.makedirs('result', exist_ok=True)
+            file_path = os.path.join('result', 'reservations.json')
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(all_reservations, f, ensure_ascii=False, indent=4)
+
+            QMessageBox.information(self, "완료", f"예약 정보를 크롤링하여 {file_path} 파일로 저장했습니다.")
+
+        except Exception as e:
+            QMessageBox.warning(self, "오류", f"예약 확인 및 크롤링 중 오류가 발생했습니다: {e}")
         
 def main():
     # Pyinstaller와 multiprocessing을 함께 사용할 때 필요
