@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 import json
+import pandas as pd
 
 import os
 import time
@@ -386,14 +387,19 @@ class MyApp(QMainWindow, Ui_AutoTennis):
                     break
 
             os.makedirs('result', exist_ok=True)
-            file_path = os.path.join('result', 'reservations.json')
-            with open(file_path, 'w', encoding='utf-8') as f:
+            json_file_path = os.path.join('result', 'reservations.json')
+            with open(json_file_path, 'w', encoding='utf-8') as f:
                 json.dump(all_reservations, f, ensure_ascii=False, indent=4)
 
-            QMessageBox.information(self, "완료", f"예약 정보를 크롤링하여 {file_path} 파일로 저장했습니다.")
+            # Convert to XLSX (assuming pandas is installed)
+            df = pd.read_json(json_file_path)
+            excel_path = os.path.join('result', 'reservations.xlsx')
+            df.to_excel(excel_path, index=False)
+            
+            QMessageBox.information(self, "완료", f"예약 정보를 크롤링하여 {json_file_path} 및 {excel_path} 파일로 저장했습니다.")
 
         except Exception as e:
-            QMessageBox.warning(self, "오류", f"예약 확인 및 크롤링 중 오류가 발생했습니다: {e}")
+            QMessageBox.warning(self, "오류", f"예약 확인, 크롤링 또는 엑셀 변환 중 오류가 발생했습니다: {e}")
         
 def main():
     # Pyinstaller와 multiprocessing을 함께 사용할 때 필요
